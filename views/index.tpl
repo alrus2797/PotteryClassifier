@@ -13,6 +13,11 @@
 
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        .valign-wrapper {
+            flex-wrap: wrap;
+        }
+    </style>
 </head>
 
 <body>
@@ -28,7 +33,7 @@
             <ul id="nav-mobile" class="sidenav">
                 <div class="row"></div>
                 <li><a href="#" class="user-container registered"></a></li>
-                <li><a href="#" class="registered">Cerrar Sesión</a></li>
+                <li><a href="#" class="registered sign-out">Cerrar Sesión</a></li>
             </ul>
             <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
         </div>
@@ -60,20 +65,32 @@
 
             <div class="registered">
                 <h2 class="center blue-text">Classifier</h2>
+                <h5 id="n-potteries" class="center"></h5>
                 <br>
-                <div class="col s12 m7">
-                    <div class="card horizontal">
-                        <div class="card-image">
-                            <img id="pottery-img" src="src/images/a.jpg">
-                        </div>
-                        <div class="card-stacked">
-                            <div class="card-content">
-                                <h4>Clases</h4>
-                                <p>I am a very simple card. I am good at containing small bits of information.</p>
-                            </div>
-                            <div class="card-action ">
-                                <a href="#" id="previous" class="left blue-text">Anterior</a>
-                                <a href="#" id="next" class="right blue-text">Siguiente</a>
+                <div class="row valign-wrapper">
+                    <div class="col s12 m6">
+                        <img class="responsive-img" id="pottery-img" src="" data-id="">
+                    </div>
+                    <div class="col s12 m6">
+                        <div class="card">
+                            <div class="card-content center">
+                                <h4>Classes</h4>
+                                <form action="">
+                                    %for _class in classes:
+                                    <p>
+                                        <label>
+                                            <input class="pottery-class" name="pottery_class" type="radio"
+                                                value="{{_class}}" />
+                                            <span>{{_class.title()}}</span>
+                                        </label>
+                                    </p>
+                                    <br>
+                                    %end
+                                </form>
+                                <div class="card-action ">
+                                    <a href="#" id="next" class="right waves-effect blue darken-2 btn-small disabled"><i
+                                            class="material-icons right">send</i>Next</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -99,21 +116,11 @@
     <!-- TODO: Add SDKs for Firebase products that you want to use
         https://firebase.google.com/docs/web/setup#available-libraries -->
     <script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-analytics.js"></script>
 
     <script>
 
-        //Materialize inizializations
-        $(document).ready(function () {
-            $('.sidenav').sidenav();
-            $('.registered').hide();
-            $('.guest').hide();
-        });
-
-
-
-
-        // Your web app's Firebase configuration
         var firebaseConfig = {
             apiKey: "AIzaSyC3ccOEGIYadjSd84rfckUEKNYYlYuSgbQ",
             authDomain: "potteryclassifier.firebaseapp.com",
@@ -129,21 +136,67 @@
         firebase.analytics();
         firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
 
-        firebase.auth().onAuthStateChanged(function (user) {
-            if (user) {
-                $('.user-container').text(user.displayName);
-                $('.registered').show();
-                $('.guest').hide();
-            } else {
-                $('.registered').hide();
-                $('.guest').show();
-            }
-            $('.loader').hide();
-        });
+
 
         // console.log("Name:", firebase.app(), firebase.app().name);
 
         var provider = new firebase.auth.GoogleAuthProvider();
+        var database = firebase.database();
+
+        var n_potteries;
+
+        $(document).ready(function () {
+            //Materialize inizializations
+            $('.sidenav').sidenav();
+            $('.registered').hide();
+            $('.loader').show();
+            $('.guest').hide();
+
+
+            // Your web app's Firebase configuration
+
+
+            firebase.auth().onAuthStateChanged(function (user) {
+                if (user) {
+                    $('.user-container').text(user.displayName);
+                    $('.registered').show();
+                    $('.guest').hide();
+
+                    //Start with images request
+                    console.log(user.uid);
+                    var pick;
+                    database.ref('/properties').once('value').then(function (snapshot) {
+                        n_potteries = snapshot.val().n_potteries;
+                    }).then(function(){
+                        database.ref('/users/' + user.uid).once('value').then(function (snapshot) {
+                            pick = snapshot.val().next_pick;
+                            if (pick >= n_potteries){
+                                alert('You\'re donde with pots.');
+                                window.location.replace('thanks')
+                                return;
+                            }
+                            $('#pottery-img').attr('src', '/images/' + pick + '.png');
+                            $('#pottery-img').data('id', pick);
+                        }).then(function(){
+                            $('#n-potteries').text('Pot ' + (pick + 1) + '/' + (n_potteries));
+                        });
+                    });
+
+                } else {
+                    $('.registered').hide();
+                    $('.guest').show();
+                }
+                $('.loader').hide();
+            });
+
+
+        });
+
+
+
+
+
+
 
         function register() {
             firebase.auth().signInWithPopup(provider).then(function (result) {
@@ -151,6 +204,9 @@
                 var token = result.credential.accessToken;
                 // The signed-in user info.
                 var user = result.user;
+                database.ref('users/' + user.uid).set({
+                    "next_pick": 0
+                })
             }).catch(function (error) {
                 // Handle Errors here.
                 var errorCode = error.code;
@@ -179,6 +235,45 @@
                 console.log(error);
                 alert('Error:', error);
             });
+        });
+
+        $('.pottery-class').click(function(){
+            $('#next').removeClass('disabled');
+        });
+
+        $('#next').click(function () {
+            var checked = $('.pottery-class:checked').val();
+            if (checked == null){
+                alert("Select a class first");
+                return;
+            }
+            var user = firebase.auth().currentUser
+            var pottery_id = $('#pottery-img').data('id');
+            if (user && pottery_id != null){
+                console.log("Class:", checked, "By", user.displayName);
+                database.ref('/scores/'+pottery_id+'/'+checked).transaction(function(currentScore){
+                    return currentScore + 1;
+                });
+
+
+                database.ref('/users/'+user.uid).update({
+                    'next_pick': pottery_id + 1
+                }, function(error){
+                    if (error){
+                        console.log("Error: ", error);
+                        alert("An error ocurred (see console for more information)");
+                    }
+                    else{
+                        $('#pottery-img').data('id', pottery_id + 1);
+                        if (pottery_id + 1 >= n_potteries){
+                            alert('This is the last pot. Thanks for your collaboration');
+                            window.location.replace('thanks')
+                            return;
+                        }
+                        $('#pottery-img').attr('src', '/images/' + (pottery_id + 1) + '.png');
+                    }
+                });
+            }
         })
 
     </script>

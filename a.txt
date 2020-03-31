@@ -1,0 +1,10 @@
+C:/PerPer/PotteryClasifier/src/images/number_0.png
+C:/PerPer/PotteryClasifier/src/images/number_1.png
+C:/PerPer/PotteryClasifier/src/images/number_2.png
+C:/PerPer/PotteryClasifier/src/images/number_3.png
+C:/PerPer/PotteryClasifier/src/images/number_4.png
+C:/PerPer/PotteryClasifier/src/images/number_5.png
+C:/PerPer/PotteryClasifier/src/images/number_6.png
+C:/PerPer/PotteryClasifier/src/images/number_7.png
+C:/PerPer/PotteryClasifier/src/images/number_8.png
+C:/PerPer/PotteryClasifier/src/images/number_9.png
