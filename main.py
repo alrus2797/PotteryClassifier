@@ -1,5 +1,7 @@
 from bottle import route, run, view, template, static_file
 from classes import classes_array
+import sys
+import os
 
 @route('/')
 def root():
@@ -20,4 +22,8 @@ def server_static(filename):
     return static_file(filename, root='./src/images/enumerated')
 
 
-run(host='localhost', port=8080, debug=True, reloader=True)
+if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == "local":
+        run(host="localhost", port=8000, debug=True, reloader=True)
+    else:
+        run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
