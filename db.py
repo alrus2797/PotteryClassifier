@@ -1,6 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials
-from firebase_admin import db
+from firebase_admin import db, auth
 import os
 import shutil
 from os.path import isfile, join
@@ -21,7 +21,7 @@ def enumerate_dataset(files_list):
         mapper[str(number)] = filename
     return mapper
 
-def upload_to_database(db, dataset):
+def upload_to_database(dataset):
     scores_ref      = db.reference('scores')
     real_names_ref  = db.reference('real_names')
 
@@ -48,5 +48,6 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://potteryclassifier.firebaseio.com'
 })
 
+# user = auth.set_custom_user_claims('LvbR88WoNXZOkFfaglLATBF2C693', {'admin': True})
 
 

@@ -18,7 +18,6 @@ def server_static(filepath):
 
 @route('/images/<filename>')
 def server_static(filename):
-    print("file:",filename)
     return static_file(filename, root='./src/images/enumerated')
 
 

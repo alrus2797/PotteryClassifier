@@ -132,6 +132,16 @@
             });
             
         });
+
+
+        $('.sign-out').click(function () {
+            firebase.auth().signOut().then(function () {
+                window.location.href='/'
+            }).catch(function (error) {
+                console.log(error);
+                alert('Error:', error);
+            });
+        });
     </script>
 </body>
 

@@ -155,7 +155,6 @@
 
             // Your web app's Firebase configuration
 
-
             firebase.auth().onAuthStateChanged(function (user) {
                 if (user) {
                     $('.user-container').text(user.displayName);
@@ -171,7 +170,7 @@
                         database.ref('/users/' + user.uid).once('value').then(function (snapshot) {
                             pick = snapshot.val().next_pick;
                             if (pick >= n_potteries){
-                                alert('You\'re donde with pots.');
+                                alert('You\'re done with pots.');
                                 window.location.replace('thanks')
                                 return;
                             }
@@ -250,29 +249,45 @@
             var user = firebase.auth().currentUser
             var pottery_id = $('#pottery-img').data('id');
             if (user && pottery_id != null){
-                console.log("Class:", checked, "By", user.displayName);
+                var error_flag = false;
+                console.log("Class:", checked, "By", user.displayName, "Pot_id: ", pottery_id);
                 database.ref('/scores/'+pottery_id+'/'+checked).transaction(function(currentScore){
                     return currentScore + 1;
-                });
-
-
-                database.ref('/users/'+user.uid).update({
-                    'next_pick': pottery_id + 1
                 }, function(error){
                     if (error){
                         console.log("Error: ", error);
-                        alert("An error ocurred (see console for more information)");
+                        alert("An error ocurred (see console for more information)"); 
+                        error_flag = true;
                     }
                     else{
-                        $('#pottery-img').data('id', pottery_id + 1);
-                        if (pottery_id + 1 >= n_potteries){
-                            alert('This is the last pot. Thanks for your collaboration');
-                            window.location.replace('thanks')
-                            return;
-                        }
-                        $('#pottery-img').attr('src', '/images/' + (pottery_id + 1) + '.png');
+                        console.log('Okey');
                     }
+                }).then(function(){
+                    if (error_flag == true){
+                        return;
+                    }
+                    database.ref('/users/'+user.uid).update({
+                        'next_pick': pottery_id + 1
+                    }, function(error){
+                        if (error){
+                            console.log("Error: ", error);
+                            alert("An error ocurred (see console for more information)");
+                        }
+                        else{
+                            $('#pottery-img').data('id', pottery_id + 1);
+                            if (pottery_id + 1 >= n_potteries){
+                                alert('This is the last pot. Thanks for your collaboration');
+                                window.location.replace('thanks')
+                                return;
+                            }
+                            $('#pottery-img').attr('src', '/images/' + (pottery_id + 1) + '.png');
+                            $('#n-potteries').text('Pot ' + (pottery_id + 2) + '/' + (n_potteries));
+                        }
+                    });
                 });
+
+
+
             }
         })
 
