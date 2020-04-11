@@ -45,9 +45,9 @@
         <div class="container">
             <div class="home guest">
                 <br><br>
-                <h1 class="header center blue-text">Starter Template</h1>
+                <h1 class="header center blue-text">Pottery Clasifier</h1>
                 <div class="row center">
-                    <h5 class="header col s12 light">A modern responsive front-end framework based on Material Design
+                    <h5 class="header col s12 light"> Help us to classify a new Antropology dataset of peruvian pots
                     </h5>
                 </div>
                 <div class="row center">
